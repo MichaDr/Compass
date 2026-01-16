@@ -7,7 +7,25 @@
             content="viewport-fit=cover, width=device-width, inital-scale=1.0, minimum=scale=1.0, maximum-scale=5.0">
 
     </head>
+
         <body>
-            <h1>Testung</h1>
-        </body>
+            <h1>Live Sensor Data</h1>
+            <!-- Accelerometer block -->
+           <section id="acc-section">
+             <h2>Accelerometer</h2>
+             <p>x: <span id="acc-x">–</span></p>
+             <p>y: <span id="acc-y">–</span></p>
+             <p>z: <span id="acc-z">–</span></p>
+           </section>
+
+            <!-- Gyroscope block -->
+           <section id="gyro-section">
+            <h2>Gyroscope</h2>
+            <p>α (alpha): <span id="gyro-a">–</span></p>
+            <p>β (beta):  <span id="gyro-b">–</span></p>
+            <p>γ (gamma): <span id="gyro-g">–</span></p>
+           </section>
+
+        <script src=js/sensor.js></script>
+       </body>
 </html>
