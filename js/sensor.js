@@ -21,7 +21,7 @@ const rotBetaEl = document.getElementById("rotBeta");
 const rotGammaEl = document.getElementById("rotGamma");
 
 
-const interval = document.getElementById("interval");
+const intervalEl = document.getElementById("interval");
 
 function deviceOrientationListener(event) {
   absEl.textContent   = event.absolute;
@@ -37,7 +37,7 @@ function deviceMotionListener(event) {
 
   accGrXEl.textContent = event.accelerationIncludingGravity?.x?.toFixed(2);
   accGrYEl.textContent = event.accelerationIncludingGravity?.y?.toFixed(2);
-  accGRZEl.textContent = event.accelerationIncludingGravity?.z?.toFixed(2);
+  accGrZEl.textContent = event.accelerationIncludingGravity?.z?.toFixed(2);
 
   rotAlphaEl.textContent  = event.rotationRate?.alpha?.toFixed(2);
   rotBetaEl.textContent  = event.rotationRate?.beta?.toFixed(2);
@@ -55,7 +55,7 @@ if (window.DeviceOrientationEvent) {
 }
 
 // Check for Browser support - DeviceMotionEvent
-if (window.DeviceOrientationEvent) {
+if (window.DeviceMotionEvent) {
   window.addEventListener("devicemotion", deviceMotionListener);
 } else {
   console.log("Your browser doesnt't support Device Motion")
