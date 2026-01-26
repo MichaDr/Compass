@@ -31,6 +31,7 @@ function deviceOrientationListener(event) {
 }
 
 function deviceMotionListener(event) {
+  console.log(event);
   accXEl.textContent   = event.acceleration?.x?.toFixed(2);
   accYEl.textContent   = event.acceleration?.y?.toFixed(2);
   accZEl.textContent   = event.acceleration?.z?.toFixed(2);
@@ -43,7 +44,7 @@ function deviceMotionListener(event) {
   rotBetaEl.textContent  = event.rotationRate?.beta?.toFixed(2);
   rotGammaEl.textContent  = event.rotationRate?.gamma?.toFixed(2);
 
-  intervalEL.textContent = event.interval?.toFixed(2);
+  intervalEl.textContent = event.interval?.toFixed(2);
 }
 
 // Check for Browser support - DeviceOrientationEvent
