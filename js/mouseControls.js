@@ -1,3 +1,4 @@
+// Shared pointer target consumed by game.js each frame.
 let mouseX = 0;
 let mouseY = 0;
 

@@ -1,4 +1,4 @@
-// Game configuration
+// Phaser boot configuration; scene callbacks are defined in game.js.
 const config = {
     type: Phaser.AUTO,
     width: 800,
@@ -18,5 +18,5 @@ const config = {
     }
 };
 
-// Initialize the Phaser Game (after all functions and config are defined)
+// Start the game only after scripts defining preload/create/update are loaded.
 var game = new Phaser.Game(config);

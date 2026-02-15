@@ -18,15 +18,15 @@
       <div id="game-container"></div>
     </div>
 
-    <!-- Load Phaser first -->
+    <!-- Phaser must load before game scripts that reference the Phaser global. -->
     <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser-arcade-physics.min.js"></script>
-    <!-- Load sensor handling -->
+    <!-- Device orientation helpers (writes gyroX/gyroY/gyroZ used by game.js). -->
     <script src="./js/sensor.js"></script>
-    <!-- Load mouse controls -->
+    <!-- Pointer tracking helpers (writes mouseX/mouseY used by game.js). -->
     <script src="./js/mouseControls.js"></script>
-    <!-- Load game definitions -->
+    <!-- Core scene lifecycle + gameplay logic. -->
     <script src="./js/game.js"></script>
-    <!-- Load config (references functions from game.js) -->
+    <!-- Bootstraps Phaser and references lifecycle functions from game.js. -->
     <script src="./js/config.js"></script>
   </body>
 </html>

@@ -1,6 +1,6 @@
 const DEG_TO_RAD = Math.PI / 180;
 
-// device Orientation
+// Rolling orientation samples smooth noisy gyro readings before applying motion.
 let gyroEnabled = false;
 let sampleIndex = 0;
 const GYRO_SAMPLE_SIZE = 10;
@@ -24,6 +24,7 @@ function clamp(value, min, max) {
 }
 
 function handleOrientation(event) {
+  // If orientation data is missing, immediately fall back to mouse mode.
   if (event.beta === null || event.gamma === null || event.alpha === null) {
     console.log("Your device doesn't provide orientation data")
     useMouseControl = true;
@@ -50,17 +51,19 @@ function handleOrientation(event) {
 
   sampleIndex++;
 
+  // Wait until the sample buffer is warm, then use averaged angles for stability.
   if (sampleIndex >= GYRO_SAMPLE_SIZE) {
     const avgBeta = average(betaSamples);
     const avgGamma = average(gammaSamples);
     const avgAlpha = average(alphaSamples);
+    // Map angles to normalized acceleration components in [-1, 1].
     gyroX = Math.sin(avgGamma * DEG_TO_RAD);
     gyroY = Math.sin(avgBeta * DEG_TO_RAD);
     gyroZ = Math.sin(avgAlpha * DEG_TO_RAD);
   }
 }
 
-// Check for Browser support - DeviceOrientationEvent
+// Register orientation listener when supported; otherwise keep mouse mode.
 function initializeOrientation() {
   if (window.DeviceOrientationEvent) {
     window.addEventListener("deviceorientation", handleOrientation);

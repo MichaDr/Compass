@@ -4,6 +4,7 @@
     box-sizing: border-box;
 }
 
+/* Centers the game card and applies page-level gradient backdrop. */
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -40,7 +41,7 @@ h1 {
     border-radius: 0px;
 }
 
-/* Mobile optimizations*/
+/* Keep the canvas responsive while preserving its internal game resolution. */
 @media (max-width: 850px) {
     h1 {
         font-size: 2em;

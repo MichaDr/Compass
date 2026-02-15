@@ -1,4 +1,4 @@
-// Global variables
+// Scene objects and UI state shared across lifecycle callbacks.
 let ball;
 let walls;
 let holes;
@@ -17,7 +17,7 @@ let controlModeText;
 let dead = false;
 let cursors;
 
-// Control mode
+// Starts in mouse mode until orientation data is confirmed usable.
 let useMouseControl = true;
 
 // Physics constants
@@ -31,6 +31,7 @@ const WALL_X_MAX = 700;
 const VERTICAL_Y_MIN = 50;
 const VERTICAL_Y_MAX = 550;
 
+// Static maze segments: [x, y, width, height]
 const MAZE_WALLS = [
     [80, 0, 10, 200],
     [20, 170, 250, 10],
@@ -78,7 +79,7 @@ const HOLE_POSITIONS = [
     [700, 200]
 ];
 
-// Preload function
+// Only preload assets that are used as textures/sprites.
 function preload() {
     this.load.image('hole', 'assets/hole.png');
 }
@@ -111,7 +112,7 @@ function create() {
     goal = this.add.circle(770, 320, 20, 0x2ecc71);
     this.physics.add.existing(goal, true);
 
-    // Add collision detection
+    // Collision effects are intentionally per-wall to support distinct behaviors.
     this.physics.add.collider(ball, walls);
     this.physics.add.collider(ball, bounceWall, increaseBounce, null, this);
     this.physics.add.collider(ball, moveableWall, reachDeadlyWall, null, this);
@@ -145,7 +146,7 @@ function create() {
     });
     winText.setVisible(false);
 
-    // Control mode indicator (will be updated in initializeOrientation)
+    // Updated by sensor.js when orientation becomes available/unavailable.
     controlModeText = this.add.text(400, 570, 'Control: Detecting...', {
         fontSize: '16px',
         fill: '#fff',
@@ -176,6 +177,7 @@ function createCenteredText(scene, x, y, text, style) {
     return label;
 }
 
+// iOS requires a user gesture before motion sensors can be accessed.
 function setupOrientationPermission(scene) {
     if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
         const permButton = scene.add.text(400, 300, 'Tap to enable device motion', {
@@ -242,12 +244,14 @@ function update() {
 }
 
 function updateWallsWithKeyboard() {
+    // Horizontal pair moves together.
     if (cursors.left.isDown && moveableWall.x > WALL_X_MIN) {
         moveWallPairX(-WALL_SPEED);
     } else if (cursors.right.isDown && moveableWall.x < WALL_X_MAX) {
         moveWallPairX(WALL_SPEED);
     }
 
+    // Vertical pair is mirrored (one goes up while the other goes down).
     if (cursors.left.isDown && verticalWall.y > VERTICAL_Y_MIN) {
         moveWallPairY(-WALL_SPEED);
     } else if (cursors.right.isDown && verticalWall.y < VERTICAL_Y_MAX) {
@@ -256,6 +260,7 @@ function updateWallsWithKeyboard() {
 }
 
 function updateWallsWithGyro() {
+    // Clamp wall pairs at bounds to prevent drift from sensor noise.
     if (moveableWall.x > WALL_X_MIN && moveableWall.x < WALL_X_MAX) {
         moveWallPairX(-gyroZ);
     } else if (moveableWall.x <= WALL_X_MIN) {
@@ -288,6 +293,7 @@ function setWallPairX(x) {
 }
 
 function moveWallPairY(delta) {
+    // Keep spacing constant by moving the second wall with opposite delta.
     verticalWall.y += delta;
     verticalWall2.y -= delta;
     verticalWall.body.updateFromGameObject();
