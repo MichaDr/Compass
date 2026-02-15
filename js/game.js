@@ -10,10 +10,10 @@ let controlModeText;
 let useMouseControl = true;
 
 // Physics constants
-const TILT_MULTIPLIER = 8;  // How responsive the ball is to tilting
-const MOUSE_FORCE = 0.9;   // How strong mouse attraction is
-const MAX_VELOCITY = 300;   // Maximum ball speed
-const BALL_BOUNCE = 0.3;    // Ball bounciness
+const TILT_MULTIPLIER = 400;
+const MOUSE_FORCE = 0.9; 
+const MAX_VELOCITY = 350;   
+const BALL_BOUNCE = 0.3;    
 
 // Preload function
 function preload() {
