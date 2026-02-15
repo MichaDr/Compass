@@ -15,8 +15,8 @@ let cursors;
 let useMouseControl = true;
 
 // Physics constants
-const TILT_MULTIPLIER = 400;
-const MOUSE_FORCE = 0.9; 
+var TILT_MULTIPLIER = 400;
+var MOUSE_FORCE = 0.9; 
 const MAX_VELOCITY = 350;   
 const BALL_BOUNCE = 0.3;    
 
@@ -56,6 +56,11 @@ function create() {
     bounceWall.body.setImmovable(true);
     bounceWall.body.setAllowGravity(false);   
 
+    speedWall = this.add.rectangle(230, 560, 10, 90, 0x9b59b6);
+    this.physics.add.existing(speedWall);
+    speedWall.body.setImmovable(true);
+    speedWall.body.setAllowGravity(false);
+
     goal = this.add.circle(770, 320, 20, 0x2ecc71);
     this.physics.add.existing(goal, true); 
     
@@ -63,6 +68,7 @@ function create() {
     this.physics.add.collider(ball, walls);
     this.physics.add.collider(ball, bounceWall, increaseBounce, null, this);
     this.physics.add.collider(ball, moveableWall, reachHole, null, this);
+    this.physics.add.collider(ball, speedWall, increaseSpeed, null, this);
     this.physics.add.overlap(ball, holes, reachHole, null, this);
     this.physics.add.overlap(ball, goal, reachGoal, null, this);
     
@@ -151,8 +157,13 @@ function createHoles() {
     createHole(30, 260); // Hole 6
     createHole(30, 420); // Hole 7
     createHole(55, 200); // Fake Hole 2
-    createHole(30, 490); // Fake Hole 3
+    createHole(30, 485); // Hole 8
+
+    createHole(170, 390)
+    createHole(260, 490)
+    createHole(330, 430)
 }
+
 
 function createMaze() {
     const createWall = (x, y, width, height) => {
@@ -163,7 +174,7 @@ function createMaze() {
     
     createWall(80, 0, 10, 200);  
     createWall(20, 170, 250, 10); 
-    createWall(150, 145, 10, 100);
+  //  createWall(150, 145, 10, 100);
 
     createWall(240, 100, 180, 10);
     createWall(330, 80, 10, 50); 
@@ -179,9 +190,13 @@ function createMaze() {
 
     createWall(140, 440, 10, 200);
     createWall(37, 450, 70, 10);
-    createWall(110, 500, 70, 10);
+    createWall(110, 545, 70, 10);
 
-    createWall(350, 300, 10, 200);  // Vertical wall 3
+    
+    createWall(360, 235, 10, 100);  // Vertical wall 3
+    createWall(360, 400, 10, 100);  // Horizontal wall 2
+    createWall(440, 300, 10, 100);  // Horizontal wall 3
+
     createWall(600, 450, 200, 10);  // Horizontal wall 3
     createWall(800, 350, 160, 10);  // Small horizontal wall 2
     
@@ -207,7 +222,7 @@ function update() {
             moveableWall.x -= gyroZ; 
             moveableWall.body.updateFromGameObject();
         } else if (moveableWall.x < 700) {
-            moveableWall.x += gyroZ;
+            moveableWall.x += Math.abs(gyroZ);
             moveableWall.body.updateFromGameObject();
         }
     
@@ -259,9 +274,15 @@ function reachHole() {
 }
 
 function increaseBounce(ball) {
-    ball.body.setBounce(BALL_BOUNCE * 4);
+    ball.body.setBounce(BALL_BOUNCE * 2.5);
     ball.body.updateFromGameObject();
 } 
+
+function increaseSpeed(ball) {
+    MOUSE_FORCE *= 1.2;
+    TILT_MULTIPLIER *= 1.2;
+    ball.body.updateFromGameObject();
+}
 
 function reachGoal() {
     if (!gameWon) {
