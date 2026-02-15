@@ -2,6 +2,9 @@
 let ball;
 let walls;
 let moveableWall;
+let moveableWall2;
+let verticalWall;
+let verticalWall2;
 let goal;
 let gameWon = false;
 let winText;
@@ -50,6 +53,21 @@ function create() {
     this.physics.add.existing(moveableWall);
     moveableWall.body.setImmovable(true);
     moveableWall.body.setAllowGravity(false);
+
+    moveableWall2 = this.add.rectangle(400, 550, 200, 20, 0xe2ec70);
+    this.physics.add.existing(moveableWall2);
+    moveableWall2.body.setImmovable(true);
+    moveableWall2.body.setAllowGravity(false);
+
+    verticalWall = this.add.rectangle(610, 0, 20, 100, 0xe74c3c);
+    this.physics.add.existing(verticalWall);
+    verticalWall.body.setImmovable(true);
+    verticalWall.body.setAllowGravity(false);
+    
+    verticalWall2 = this.add.rectangle(680, 600, 20, 100, 0xe74c3c);
+    this.physics.add.existing(verticalWall2);
+    verticalWall2.body.setImmovable(true);
+    verticalWall2.body.setAllowGravity(false);
  
     bounceWall = this.add.rectangle(250, 136, 10, 60, 0xe2ec70);
     this.physics.add.existing(bounceWall);
@@ -68,6 +86,9 @@ function create() {
     this.physics.add.collider(ball, walls);
     this.physics.add.collider(ball, bounceWall, increaseBounce, null, this);
     this.physics.add.collider(ball, moveableWall, reachHole, null, this);
+    this.physics.add.collider(ball, moveableWall2, increaseBounce, null, this);
+    this.physics.add.collider(ball, verticalWall, reachHole, null, this);
+    this.physics.add.collider(ball, verticalWall2, reachHole, null, this);
     this.physics.add.collider(ball, speedWall, increaseSpeed, null, this);
     this.physics.add.overlap(ball, holes, reachHole, null, this);
     this.physics.add.overlap(ball, goal, reachGoal, null, this);
@@ -164,6 +185,14 @@ function createHoles() {
     createHole(330, 430)
 
     createHole(390, 200)
+    createHole(470, 500)
+
+    createHole(470, 40) //Fake Hole 3
+    
+    createHole(700, 550)
+    createHole(550, 200)
+
+    createHole(700, 200)
 }
 
 
@@ -217,21 +246,59 @@ function update() {
     if (useMouseControl) {
         if (cursors.left.isDown && moveableWall.x > 100) {
             moveableWall.x -= 2;
+            moveableWall2.x -= 2;
             moveableWall.body.updateFromGameObject();
+            moveableWall2.body.updateFromGameObject();
         } else if (cursors.right.isDown && moveableWall.x < 700) {
             moveableWall.x += 2;
+            moveableWall2.x += 2;
             moveableWall.body.updateFromGameObject();
+            moveableWall2.body.updateFromGameObject();
        }
+
+       if (cursors.left.isDown && verticalWall.y > 50) {
+            verticalWall.y -= 2;
+            verticalWall2.y += 2;
+            verticalWall.body.updateFromGameObject();
+            verticalWall2.body.updateFromGameObject();
+        } else if (cursors.right.isDown && verticalWall.y < 550) {
+            verticalWall.y += 2;
+            verticalWall2.y -= 2;
+            verticalWall.body.updateFromGameObject();
+            verticalWall2.body.updateFromGameObject();
+       } 
     } else if (moveableWall.x > 100 && moveableWall.x < 700) {
             moveableWall.x -= gyroZ; 
+            moveableWall2.x -= gyroZ;
             moveableWall.body.updateFromGameObject();
+            moveableWall2.body.updateFromGameObject();
         } else if (moveableWall.x <= 100) {
             moveableWall.x = 100;
+            moveableWall2.x = 100;
             moveableWall.body.updateFromGameObject();
+            moveableWall2.body.updateFromGameObject();
         } else if (moveableWall.x >= 700) {
             moveableWall.x = 700;
+            moveableWall2.x = 700;
             moveableWall.body.updateFromGameObject();
+            moveableWall2.body.updateFromGameObject();
         }
+        if (verticalWall.y > 50 && verticalWall.y < 550) {
+            verticalWall.y -= gyroZ; 
+            verticalWall2.y += gyroZ;
+            verticalWall.body.updateFromGameObject();
+            verticalWall2.body.updateFromGameObject();
+        } else if (verticalWall.y <= 50) {
+            verticalWall.y = 50;
+            verticalWall2.y = 550;
+            verticalWall.body.updateFromGameObject();
+            verticalWall2.body.updateFromGameObject();
+        } else if (verticalWall.y >= 550) {
+            verticalWall.y = 550;
+            verticalWall2.y = 50;
+            verticalWall.body.updateFromGameObject();
+            verticalWall2.body.updateFromGameObject();
+        }       
     
     
 
@@ -261,6 +328,7 @@ function update() {
         ball.body.setAcceleration(accelX, accelY);
     }
 }
+
 
 
 
