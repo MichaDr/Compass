@@ -197,6 +197,8 @@ function createMaze() {
     createWall(360, 400, 10, 100);  // Horizontal wall 2
     createWall(440, 300, 10, 100);  // Horizontal wall 3
 
+    createWall(400, 350, 80, 10);  // Vertical wall 4
+
     createWall(600, 450, 200, 10);  // Horizontal wall 3
     createWall(800, 350, 160, 10);  // Small horizontal wall 2
     
@@ -218,11 +220,8 @@ function update() {
             moveableWall.x += 2;
             moveableWall.body.updateFromGameObject();
        }
-    } else if (moveableWall.x > 100) {
+    } else if (moveableWall.x > 100 && moveableWall.x < 700) {
             moveableWall.x -= gyroZ; 
-            moveableWall.body.updateFromGameObject();
-        } else if (moveableWall.x < 700) {
-            moveableWall.x += Math.abs(gyroZ);
             moveableWall.body.updateFromGameObject();
         }
     
