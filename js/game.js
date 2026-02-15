@@ -59,12 +59,12 @@ function create() {
     moveableWall2.body.setImmovable(true);
     moveableWall2.body.setAllowGravity(false);
 
-    verticalWall = this.add.rectangle(610, 0, 20, 100, 0xe74c3c);
+    verticalWall = this.add.rectangle(610, 51, 20, 100, 0xe74c3c);
     this.physics.add.existing(verticalWall);
     verticalWall.body.setImmovable(true);
     verticalWall.body.setAllowGravity(false);
     
-    verticalWall2 = this.add.rectangle(680, 600, 20, 100, 0xe74c3c);
+    verticalWall2 = this.add.rectangle(680, 549, 20, 100, 0xe74c3c);
     this.physics.add.existing(verticalWall2);
     verticalWall2.body.setImmovable(true);
     verticalWall2.body.setAllowGravity(false);
@@ -205,7 +205,7 @@ function createMaze() {
     
     createWall(80, 0, 10, 200);  
     createWall(20, 170, 250, 10); 
-  //  createWall(150, 145, 10, 100);
+    createWall(150, 145, 10, 100);
 
     createWall(240, 100, 180, 10);
     createWall(330, 80, 10, 50); 
@@ -223,19 +223,17 @@ function createMaze() {
     createWall(37, 450, 70, 10);
     createWall(110, 545, 70, 10);
 
-    
-    createWall(360, 235, 10, 100);  // Vertical wall 3
-    createWall(360, 400, 10, 100);  // Horizontal wall 2
-    createWall(440, 300, 10, 100);  // Horizontal wall 3
+    createWall(360, 235, 10, 100);  
+    createWall(360, 400, 10, 100);  
+    createWall(440, 300, 10, 100);  
 
-    createWall(400, 350, 80, 10);  // Vertical wall 4
+    createWall(400, 350, 80, 10);  
 
-    createWall(600, 450, 200, 10);  // Horizontal wall 3
-    createWall(800, 350, 160, 10);  // Small horizontal wall 2
+    createWall(600, 450, 200, 10);  
+    createWall(800, 350, 160, 10);  
     
-    //ziel
-    createWall(800, 250, 10, 500);  // Vertical wall 4
-    createWall(740, 200, 10, 290);  // Vertical wall 4
+    createWall(800, 250, 10, 500);  
+    createWall(740, 200, 10, 290);  
 }
 
 function update() {
@@ -303,7 +301,6 @@ function update() {
     
 
     if (useMouseControl) {
-        // Mouse control: move ball toward mouse position
         const dx = mouseX - ball.x;
         const dy = mouseY - ball.y;
         const distance = Math.sqrt(dx * dx + dy * dy);
@@ -324,14 +321,9 @@ function update() {
         const accelX = gyroX * TILT_MULTIPLIER;
         const accelY = gyroY * TILT_MULTIPLIER;
         
-        // Apply acceleration to ball
         ball.body.setAcceleration(accelX, accelY);
     }
 }
-
-
-
-
 
 function reachHole() {
     if (!fallIntoHole) {
@@ -366,7 +358,6 @@ function reachGoal() {
         ball.body.setAcceleration(0, 0);
         winText.setVisible(true);
         
-        // Optional: Add a reset button or restart level
         setTimeout(() => {
             if (confirm('You won! Play again?')) {
                 location.reload();
