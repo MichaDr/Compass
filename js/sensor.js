@@ -4,16 +4,11 @@ const DEG_TO_RAD = Math.PI / 180;
 let gyroEnabled = false;
 let sampleIndex = 0;
 const GYRO_SAMPLE_SIZE = 10;
-const alphaSamples = new Array(GYRO_SAMPLE_SIZE);
 const betaSamples = new Array(GYRO_SAMPLE_SIZE);
 const gammaSamples = new Array(GYRO_SAMPLE_SIZE);
-let alpha = 0;
-let beta = 0;
-let gamma = 0;
 
 let gyroX = 0;
 let gyroY = 0;
-let gyroZ = 0;
 
 function average(values) {
   let sum = 0;
@@ -28,49 +23,47 @@ function clamp(value, min, max) {
 }
 
 function handleOrientation(event) {
-  if (event.alpha === null || event.beta === null || event.gamma === null) {
+  if (event.beta === null || event.gamma === null) {
     console.log("Your device doesn't provide orientation data")
-    alert("Your device doesn't provide orientation data, switching to mouse controls.")
     useMouseControl = true;
+    if (controlModeText) {  
+      controlModeText.setText('Control: Mouse');
+    }
     return;
   }
 
   if (sampleIndex > 1) {
     gyroEnabled = true;
+    if (controlModeText) {
+      controlModeText.setText('Control: Device Orientation');
+      useMouseControl = false;
+    }
   }
   
   const beta = clamp(event.beta, -90, 90);
   const gamma = clamp(event.gamma, -90, 90);
 
-  alphaSamples[sampleIndex % GYRO_SAMPLE_SIZE] = event.alpha;
   betaSamples[sampleIndex % GYRO_SAMPLE_SIZE] = beta;
   gammaSamples[sampleIndex % GYRO_SAMPLE_SIZE] = gamma;
   
   sampleIndex++;
 
-  if (sampleIndex === GYRO_SAMPLE_SIZE) {
-    const avgAlpha = average(alphaSamples);
+  if (sampleIndex % GYRO_SAMPLE_SIZE === 0) {
     const avgBeta = average(betaSamples);
     const avgGamma = average(gammaSamples);
 
-    gyroX = Math.sin(avgGamma * DEG_TO_RAD)
+    gyroX = Math.sin(avgGamma * DEG_TO_RAD);
     gyroY = Math.sin(avgBeta * DEG_TO_RAD);
-    gyroZ = Math.cos(avgGamma * DEG_TO_RAD) 
   }
 }
 
 // Check for Browser support - DeviceOrientationEvent
 function initializeOrientation() {
   if (window.DeviceOrientationEvent) {
-    sensorAvailable = true;
     window.addEventListener("deviceorientation", handleOrientation);
-    if (controlModeText) {
-      controlModeText.setText('Control: Device Tilt');
-    }
   } else {
     console.log("Your browser doesn't support Device Orientation")
-    sensorAvailable = false;
-    useMouseControl = true;
+    useMouseControl = true;  
     if (controlModeText) {
       controlModeText.setText('Control: Mouse');
     }
