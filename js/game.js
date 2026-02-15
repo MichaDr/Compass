@@ -8,6 +8,7 @@ let winText;
 let loseText;
 let controlModeText;
 let fallIntoHole = false;
+let cursors;
 
 
 // Control mode
@@ -49,7 +50,6 @@ function create() {
     this.physics.add.existing(moveableWall);
     moveableWall.body.setImmovable(true);
     moveableWall.body.setAllowGravity(false);
-    moveableWall.body.setCollideWorldBounds(true);
     
     goal = this.add.circle(770, 320, 20, 0x2ecc71);
     this.physics.add.existing(goal, true); 
@@ -79,16 +79,6 @@ function create() {
     winText.setOrigin(0.5);
     winText.setVisible(false);
     
-    // Instructions
-    const instructionText = this.add.text(400, 30, 'Move the ball to the green goal!', {
-        fontSize: '18px',
-        fill: '#fff',
-        align: 'center',
-        backgroundColor: '#00000088',
-        padding: { x: 10, y: 5 }
-    });
-    instructionText.setOrigin(0.5);
-    
     // Control mode indicator (will be updated in initializeOrientation)
     controlModeText = this.add.text(400, 570, 'Control: Detecting...', {
         fontSize: '16px',
@@ -100,6 +90,8 @@ function create() {
     
     // Setup mouse/pointer controls
     initializeMouseControls(this);
+    // Setup wall movement with keyboard
+    cursors = this.input.keyboard.createCursorKeys();
     
     // Request device orientation permission (for iOS 13+)
     if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
@@ -142,7 +134,8 @@ function createHoles() {
     };
     
     createHole(100, 30); // Hole 1
-
+    createHole(300, 70); // Hole 2
+    createHole(400, 30); // Hole 3
 
     createHole(200, 200);
     createHole(600, 400);
@@ -158,12 +151,13 @@ function createMaze() {
         wall.body.updateFromGameObject();
     };
     
-    createWall(80, 0, 10, 200);  // Top boundary
-    createWall(20, 170, 250, 10);  // Bottom boundary
-    createWall(150, 150, 10, 100);  // Vertical wall 1
+    createWall(80, 0, 10, 200);  
+    createWall(20, 170, 250, 10); 
+    createWall(150, 145, 10, 100);
 
     createWall(240, 100, 180, 10);  // Horizontal wall 1
     createWall(300, 200, 10, 200);  // Vertical wall 2
+    createWall(330, 80, 10, 50);  // Horizontal wall 2
 
     createWall(500, 250, 10, 300);  // Vertical wall 2
     createWall(350, 300, 10, 200);  // Vertical wall 3
@@ -179,9 +173,19 @@ function update() {
     if (gameWon) return;
     if (fallIntoHole) return;
 
-    
-        moveableWall.x += gyroZ; 
-        moveableWall.body.updateFromGameObject();
+
+    if (useMouseControl) {
+        if (cursors.left.isDown && moveableWall.x > 100) {
+            moveableWall.x -= 2;
+            moveableWall.body.updateFromGameObject();
+        } else if (cursors.right.isDown && moveableWall.x < 700) {
+            moveableWall.x += 2;
+            moveableWall.body.updateFromGameObject();
+       }
+    } else if (moveableWall.x > 100 && moveableWall.x < 700) {
+            moveableWall.x += gyroZ; 
+            moveableWall.body.updateFromGameObject();
+        }
 
     if (useMouseControl) {
         // Mouse control: move ball toward mouse position
