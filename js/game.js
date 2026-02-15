@@ -1,6 +1,7 @@
 // Global variables
 let ball;
 let walls;
+let moveableWall;
 let goal;
 let gameWon = false;
 let winText;
@@ -44,18 +45,19 @@ function create() {
 
     createHoles.call(this);
 
-    this.wall = this.add.rectangle(400, 300, 200, 20, 0xe74c3c);
-    this.physics.add.existing(this.wall);
-    this.wall.body.setImmovable(true);
-    this.wall.body.setAllowGravity(false);
+    moveableWall = this.add.rectangle(400, 300, 200, 20, 0xe74c3c);
+    this.physics.add.existing(moveableWall);
+    moveableWall.body.setImmovable(true);
+    moveableWall.body.setAllowGravity(false);
+    moveableWall.body.setCollideWorldBounds(true);
     
-    goal = this.add.circle(750, 550, 20, 0x2ecc71);
+    goal = this.add.circle(770, 320, 20, 0x2ecc71);
     this.physics.add.existing(goal, true); 
     
     // Add collision detection
     this.physics.add.collider(ball, walls);
-    this.physics.add.collider(ball, this.wall);
-    this.physics.add.collider(ball, holes, reachHole, null, this);
+    this.physics.add.collider(ball, moveableWall);
+    this.physics.add.overlap(ball, holes, reachHole, null, this);
     this.physics.add.overlap(ball, goal, reachGoal, null, this);
     
     loseText = this.add.text(400, 300, 'You fell into a hole!', {
@@ -134,14 +136,19 @@ function create() {
 
 function createHoles() {
     const createHole = (x, y) => {
-        const hole = this.add.circle(x, y, 20, 0x34495e);
+        const hole = this.add.rectangle(x, y, 20, 20, 0x34495e);
         holes.add(hole);
         hole.body.updateFromGameObject();
     };
     
+    createHole(100, 30); // Hole 1
+
+
     createHole(200, 200);
     createHole(600, 400);
     createHole(300, 500);
+    createHole(710, 150);
+    createHole(650, 30);
 }
 
 function createMaze() {
@@ -151,15 +158,21 @@ function createMaze() {
         wall.body.updateFromGameObject();
     };
     
-    createWall(150, 150, 10, 300);  // Vertical wall 1
-    createWall(300, 100, 400, 10);  // Horizontal wall 1
+    createWall(80, 0, 10, 200);  // Top boundary
+    createWall(20, 170, 250, 10);  // Bottom boundary
+    createWall(150, 150, 10, 100);  // Vertical wall 1
+
+    createWall(240, 100, 180, 10);  // Horizontal wall 1
+    createWall(300, 200, 10, 200);  // Vertical wall 2
+
     createWall(500, 250, 10, 300);  // Vertical wall 2
-    createWall(250, 450, 300, 10);  // Horizontal wall 2
     createWall(350, 300, 10, 200);  // Vertical wall 3
-    createWall(650, 150, 10, 300);  // Vertical wall 4
     createWall(600, 450, 200, 10);  // Horizontal wall 3
     createWall(200, 250, 100, 10);  // Small horizontal wall
-    createWall(700, 350, 100, 10);  // Small horizontal wall 2
+    createWall(800, 350, 160, 10);  // Small horizontal wall 2
+
+    createWall(800, 250, 10, 500);  // Vertical wall 4
+    createWall(740, 200, 10, 290);  // Vertical wall 4
 }
 
 function update() {
@@ -167,8 +180,8 @@ function update() {
     if (fallIntoHole) return;
 
     
-        this.wall.x += gyroZ; 
-        this.wall.body.updateFromGameObject();
+        moveableWall.x += gyroZ; 
+        moveableWall.body.updateFromGameObject();
 
     if (useMouseControl) {
         // Mouse control: move ball toward mouse position
