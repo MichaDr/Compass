@@ -2,40 +2,34 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <title>Compass</title>
+    <title>Ball in a Maze</title>
     <meta name="viewport"
-      content="viewport-fit=cover, width=device-width, initial-scale=1.0, maximum-scale=5.0">
-
+      content="viewport-fit=cover, width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    
     <link rel="stylesheet" href="./css/style.css">
-
   </head>
 
-    <body>
+  <body>
+    <div class="container">
+      <h1>Ball in a Maze</h1>
+      <div id="game-container"></div>
+      
+      <!-- Debug info (optional - can be hidden) -->
+      <div id="debug-info" style="display: none;">
+        <p>Beta (Y): <span id="beta">–</span></p>
+        <p>Gamma (X): <span id="gamma">–</span></p>
+      </div>
+    </div>
 
-    <h1>Test</h1>
-
-    <p>Absolute: <span id="abs">–</span></p>
-    <p>Alpha: <span id="alpha">–</span></p>
-    <p>Beta: <span id="beta">–</span></p>
-    <p>Gamma: <span id="gamma">–</span></p>
-
-    <p>Acceleration X: <span id="accX">–</span></p>
-    <p>Acceleration Y: <span id="accY">–</span></p>
-    <p>Acceleration Z: <span id="accZ">–</span></p>
-
-    <p>Acceleration with Gravity X: <span id="accGrX">–</span></p>
-    <p>Acceleration with Gravity Y: <span id="accGrY">–</span></p>
-    <p>Acceleration with Gravity Z: <span id="accGrZ">–</span></p>
-
-    <p>Rotation Alpha: <span id="rotAlpha">–</span></p>
-    <p>Rotation Beta: <span id="rotBeta">–</span></p>
-    <p>Rotation Gamma: <span id="rotGamma">–</span></p>
-
-    <p>interval: <span id="interval">–</span></p>
-
-
-
-
-            <script src="./js/sensor.js" defer></script>
-    </body>
+    <!-- Load Phaser first -->
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser-arcade-physics.min.js"></script>
+    <!-- Load sensor handling -->
+    <script src="./js/sensor.js"></script>
+    <!-- Load mouse controls -->
+    <script src="./js/mouseControls.js"></script>
+    <!-- Load game definitions -->
+    <script src="./js/game.js"></script>
+    <!-- Load config (references functions from game.js) -->
+    <script src="./js/config.js"></script>
+  </body>
 </html>

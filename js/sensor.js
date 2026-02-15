@@ -1,66 +1,80 @@
-// Helper: round a number to two decimals (or show 0.00)
-//function fmt(v) { return v ? v.toFixed(2) : '0.00'; }
+const DEG_TO_RAD = Math.PI / 180;
 
 // device Orientation
-const absEl   = document.getElementById("abs");
-const alphaEl = document.getElementById("alpha");
-const betaEl  = document.getElementById("beta");
-const gammaEl = document.getElementById("gamma");
+let gyroEnabled = false;
+let sampleIndex = 0;
+const GYRO_SAMPLE_SIZE = 10;
+const alphaSamples = new Array(GYRO_SAMPLE_SIZE);
+const betaSamples = new Array(GYRO_SAMPLE_SIZE);
+const gammaSamples = new Array(GYRO_SAMPLE_SIZE);
+let alpha = 0;
+let beta = 0;
+let gamma = 0;
 
-//device Motion
-const accXEl = document.getElementById("accX");
-const accYEl = document.getElementById("accY");
-const accZEl = document.getElementById("accZ");
+let gyroX = 0;
+let gyroY = 0;
+let gyroZ = 0;
 
-const accGrXEl = document.getElementById("accGrX");
-const accGrYEl = document.getElementById("accGrY");
-const accGrZEl = document.getElementById("accGrZ");
-
-const rotAlphaEl = document.getElementById("rotAlpha");
-const rotBetaEl = document.getElementById("rotBeta");
-const rotGammaEl = document.getElementById("rotGamma");
-
-
-const intervalEl = document.getElementById("interval");
-
-function deviceOrientationListener(event) {
-  absEl.textContent   = event.absolute;
-  alphaEl.textContent = event.alpha?.toFixed(2);
-  betaEl.textContent  = event.beta?.toFixed(2);
-  gammaEl.textContent = event.gamma?.toFixed(2);
+function average(values) {
+  let sum = 0;
+  for (let i = 0; i < values.length; i++) {
+    sum += values[i];
+  }
+  return sum / values.length;
 }
 
-function deviceMotionListener(event) {
-  console.log(event);
-  accXEl.textContent   = event.acceleration?.x?.toFixed(2);
-  accYEl.textContent   = event.acceleration?.y?.toFixed(2);
-  accZEl.textContent   = event.acceleration?.z?.toFixed(2);
+function clamp(value, min, max) {
+  return Math.max(min, Math.min(max, value));
+}
 
-  accGrXEl.textContent = event.accelerationIncludingGravity?.x?.toFixed(2);
-  accGrYEl.textContent = event.accelerationIncludingGravity?.y?.toFixed(2);
-  accGrZEl.textContent = event.accelerationIncludingGravity?.z?.toFixed(2);
+function handleOrientation(event) {
+  if (event.alpha === null || event.beta === null || event.gamma === null) {
+    console.log("Your device doesn't provide orientation data")
+    alert("Your device doesn't provide orientation data, switching to mouse controls.")
+    useMouseControl = true;
+    return;
+  }
 
-  rotAlphaEl.textContent  = event.rotationRate?.alpha?.toFixed(2);
-  rotBetaEl.textContent  = event.rotationRate?.beta?.toFixed(2);
-  rotGammaEl.textContent  = event.rotationRate?.gamma?.toFixed(2);
+  if (sampleIndex > 1) {
+    gyroEnabled = true;
+  }
+  
+  const beta = clamp(event.beta, -90, 90);
+  const gamma = clamp(event.gamma, -90, 90);
 
-  intervalEl.textContent = event.interval?.toFixed(2);
+  alphaSamples[sampleIndex % GYRO_SAMPLE_SIZE] = event.alpha;
+  betaSamples[sampleIndex % GYRO_SAMPLE_SIZE] = beta;
+  gammaSamples[sampleIndex % GYRO_SAMPLE_SIZE] = gamma;
+  
+  sampleIndex++;
+
+  if (sampleIndex === GYRO_SAMPLE_SIZE) {
+    const avgAlpha = average(alphaSamples);
+    const avgBeta = average(betaSamples);
+    const avgGamma = average(gammaSamples);
+
+    gyroX = Math.sin(avgGamma * DEG_TO_RAD)
+    gyroY = Math.sin(avgBeta * DEG_TO_RAD);
+    gyroZ = Math.cos(avgGamma * DEG_TO_RAD) 
+  }
 }
 
 // Check for Browser support - DeviceOrientationEvent
-if (window.DeviceOrientationEvent) {
-  window.addEventListener("deviceorientation", deviceOrientationListener);
-} else {
-  console.log("Your browser doesnt't support Device Orientation")
-  alert("Your browser doesn't support Device Orientation")
-}
-
-// Check for Browser support - DeviceMotionEvent
-if (window.DeviceMotionEvent) {
-  window.addEventListener("devicemotion", deviceMotionListener);
-} else {
-  console.log("Your browser doesnt't support Device Motion")
-  alert("Your browser doesn't support Device Motion")
+function initializeOrientation() {
+  if (window.DeviceOrientationEvent) {
+    sensorAvailable = true;
+    window.addEventListener("deviceorientation", handleOrientation);
+    if (controlModeText) {
+      controlModeText.setText('Control: Device Tilt');
+    }
+  } else {
+    console.log("Your browser doesn't support Device Orientation")
+    sensorAvailable = false;
+    useMouseControl = true;
+    if (controlModeText) {
+      controlModeText.setText('Control: Mouse');
+    }
+  }
 }
 
 
