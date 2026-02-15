@@ -36,12 +36,18 @@ function create() {
     walls = this.physics.add.staticGroup();
     
     createMaze.call(this);
+
+    this.wall = this.add.rectangle(400, 300, 200, 20, 0xe74c3c);
+    this.physics.add.existing(this.wall);
+    this.wall.body.setImmovable(true);
+    this.wall.body.setAllowGravity(false);
     
     goal = this.add.circle(750, 550, 20, 0x2ecc71);
     this.physics.add.existing(goal, true);  // true = static
     
     // Add collision detection
     this.physics.add.collider(ball, walls);
+    this.physics.add.collider(ball, this.wall);
     this.physics.add.overlap(ball, goal, reachGoal, null, this);
     
     // Win text (hidden initially)
@@ -129,7 +135,11 @@ function createMaze() {
 
 function update() {
     if (gameWon) return;
+
     
+        this.wall.x = gyroZ * 100 + 400; 
+        this.wall.body.updateFromGameObject();
+
     if (useMouseControl) {
         // Mouse control: move ball toward mouse position
         const dx = mouseX - ball.x;

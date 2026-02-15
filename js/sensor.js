@@ -6,9 +6,10 @@ let sampleIndex = 0;
 const GYRO_SAMPLE_SIZE = 10;
 const betaSamples = new Array(GYRO_SAMPLE_SIZE);
 const gammaSamples = new Array(GYRO_SAMPLE_SIZE);
-
+const alphaSamples = new Array(GYRO_SAMPLE_SIZE);
 let gyroX = 0;
 let gyroY = 0;
+let gyroZ = 0;
 
 function average(values) {
   let sum = 0;
@@ -23,7 +24,7 @@ function clamp(value, min, max) {
 }
 
 function handleOrientation(event) {
-  if (event.beta === null || event.gamma === null) {
+  if (event.beta === null || event.gamma === null || event.alpha === null) {
     console.log("Your device doesn't provide orientation data")
     useMouseControl = true;
     if (controlModeText) {  
@@ -45,15 +46,17 @@ function handleOrientation(event) {
 
   betaSamples[sampleIndex % GYRO_SAMPLE_SIZE] = beta;
   gammaSamples[sampleIndex % GYRO_SAMPLE_SIZE] = gamma;
-  
+  alphaSamples[sampleIndex % GYRO_SAMPLE_SIZE] = event.alpha; 
+
   sampleIndex++;
 
-  if (sampleIndex % GYRO_SAMPLE_SIZE === 0) {
+  if (sampleIndex >= GYRO_SAMPLE_SIZE) {
     const avgBeta = average(betaSamples);
     const avgGamma = average(gammaSamples);
-
+    const avgAlpha = average(alphaSamples);
     gyroX = Math.sin(avgGamma * DEG_TO_RAD);
     gyroY = Math.sin(avgBeta * DEG_TO_RAD);
+    gyroZ = Math.sin(avgAlpha * DEG_TO_RAD);
   }
 }
 
