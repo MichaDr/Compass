@@ -6,7 +6,7 @@
 
 /* Centers the game card and applies page-level gradient backdrop. */
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: "gf_Playwrite_NZ_Basic variant0";
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: #fff;
     min-height: 100vh;
