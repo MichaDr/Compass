@@ -1,36 +1,90 @@
 // Global variables
 let ball;
 let walls;
+let holes;
 let moveableWall;
 let moveableWall2;
 let verticalWall;
 let verticalWall2;
+let bounceWall;
+let speedWall;
 let goal;
 let gameWon = false;
 let winText;
 let loseText;
+let loseText2;
 let controlModeText;
-let fallIntoHole = false;
+let dead = false;
 let cursors;
-
 
 // Control mode
 let useMouseControl = true;
 
 // Physics constants
-var TILT_MULTIPLIER = 400;
-var MOUSE_FORCE = 0.9; 
-const MAX_VELOCITY = 350;   
-const BALL_BOUNCE = 0.3;    
+let TILT_MULTIPLIER = 400;
+let MOUSE_FORCE = 0.9;
+const MAX_VELOCITY = 350;
+const BALL_BOUNCE = 0.3;
+const WALL_SPEED = 2;
+const WALL_X_MIN = 100;
+const WALL_X_MAX = 700;
+const VERTICAL_Y_MIN = 50;
+const VERTICAL_Y_MAX = 550;
+
+const MAZE_WALLS = [
+    [80, 0, 10, 200],
+    [20, 170, 250, 10],
+    [150, 145, 10, 100],
+    [240, 100, 180, 10],
+    [330, 80, 10, 50],
+    [420, 30, 10, 70],
+    [460, 70, 80, 10],
+    [400, 180, 190, 10],
+    [500, 265, 10, 400],
+    [245, 240, 110, 10],
+    [190, 300, 10, 120],
+    [120, 340, 140, 10],
+    [140, 440, 10, 200],
+    [37, 450, 70, 10],
+    [110, 545, 70, 10],
+    [360, 235, 10, 100],
+    [360, 400, 10, 100],
+    [440, 300, 10, 100],
+    [400, 350, 80, 10],
+    [600, 450, 200, 10],
+    [800, 350, 160, 10],
+    [740, 200, 10, 290]
+];
+
+const HOLE_POSITIONS = [
+    [100, 30],
+    [300, 70],
+    [400, 30],
+    [460, 130],
+    [320, 210],
+    [110, 250],
+    [30, 260],
+    [30, 420],
+    [55, 200],
+    [30, 485],
+    [170, 390],
+    [260, 490],
+    [330, 430],
+    [390, 200],
+    [470, 500],
+    [470, 40],
+    [700, 550],
+    [550, 200],
+    [700, 200]
+];
 
 // Preload function
 function preload() {
-    // Preloading function for Phaser
-    // Add any assets that need to be preloaded here
+    this.load.image('hole', 'assets/hole.png');
 }
 
 function create() {
-    const scene = this;
+    this.cameras.main.setBackgroundColor(0xffffff);
 
     // Create the ball
     ball = this.add.circle(50, 50, 15, 0x3498db);
@@ -40,78 +94,57 @@ function create() {
     ball.body.setDamping(true);
     ball.body.setDrag(0.99);
     ball.body.setMaxVelocity(MAX_VELOCITY);
-    
-    walls = this.physics.add.staticGroup();
-    
-    createMaze.call(this);
 
+    walls = this.physics.add.staticGroup();
     holes = this.physics.add.staticGroup();
 
+    createMaze.call(this);
     createHoles.call(this);
 
-    moveableWall = this.add.rectangle(400, 300, 200, 20, 0xe74c3c);
-    this.physics.add.existing(moveableWall);
-    moveableWall.body.setImmovable(true);
-    moveableWall.body.setAllowGravity(false);
-
-    moveableWall2 = this.add.rectangle(400, 550, 200, 20, 0xe2ec70);
-    this.physics.add.existing(moveableWall2);
-    moveableWall2.body.setImmovable(true);
-    moveableWall2.body.setAllowGravity(false);
-
-    verticalWall = this.add.rectangle(610, 51, 20, 100, 0xe74c3c);
-    this.physics.add.existing(verticalWall);
-    verticalWall.body.setImmovable(true);
-    verticalWall.body.setAllowGravity(false);
-    
-    verticalWall2 = this.add.rectangle(680, 549, 20, 100, 0xe74c3c);
-    this.physics.add.existing(verticalWall2);
-    verticalWall2.body.setImmovable(true);
-    verticalWall2.body.setAllowGravity(false);
- 
-    bounceWall = this.add.rectangle(250, 136, 10, 60, 0xe2ec70);
-    this.physics.add.existing(bounceWall);
-    bounceWall.body.setImmovable(true);
-    bounceWall.body.setAllowGravity(false);   
-
-    speedWall = this.add.rectangle(230, 560, 10, 90, 0x9b59b6);
-    this.physics.add.existing(speedWall);
-    speedWall.body.setImmovable(true);
-    speedWall.body.setAllowGravity(false);
+    moveableWall = createImmovableRect(this, 400, 300, 200, 20, 0xe74c3c);
+    moveableWall2 = createImmovableRect(this, 400, 550, 200, 20, 0xe2ec70);
+    verticalWall = createImmovableRect(this, 610, 51, 20, 100, 0xe74c3c);
+    verticalWall2 = createImmovableRect(this, 680, 549, 20, 100, 0xe74c3c);
+    bounceWall = createImmovableRect(this, 250, 136, 10, 60, 0xe2ec70);
+    speedWall = createImmovableRect(this, 230, 560, 10, 90, 0x9b59b6);
 
     goal = this.add.circle(770, 320, 20, 0x2ecc71);
-    this.physics.add.existing(goal, true); 
-    
+    this.physics.add.existing(goal, true);
+
     // Add collision detection
     this.physics.add.collider(ball, walls);
     this.physics.add.collider(ball, bounceWall, increaseBounce, null, this);
-    this.physics.add.collider(ball, moveableWall, reachHole, null, this);
+    this.physics.add.collider(ball, moveableWall, reachDeadlyWall, null, this);
     this.physics.add.collider(ball, moveableWall2, increaseBounce, null, this);
-    this.physics.add.collider(ball, verticalWall, reachHole, null, this);
-    this.physics.add.collider(ball, verticalWall2, reachHole, null, this);
+    this.physics.add.collider(ball, verticalWall, reachDeadlyWall, null, this);
+    this.physics.add.collider(ball, verticalWall2, reachDeadlyWall, null, this);
     this.physics.add.collider(ball, speedWall, increaseSpeed, null, this);
     this.physics.add.overlap(ball, holes, reachHole, null, this);
     this.physics.add.overlap(ball, goal, reachGoal, null, this);
-    
-    loseText = this.add.text(400, 300, 'You fell into a hole!', {
-        fontSize: '32px',
-        fill: '#e74c3c',
+
+    loseText = createCenteredText(this, 400, 300, 'You fell into a hole!', {
+        fontSize: '50px',
+        fill: '#fff',
         stroke: '#000',
         strokeThickness: 6
     });
-    loseText.setOrigin(0.5);
+    loseText2 = createCenteredText(this, 400, 300, 'You hit a deadly wall!', {
+        fontSize: '50px',
+        fill: '#fff',
+        stroke: '#000',
+        strokeThickness: 6
+    });
     loseText.setVisible(false);
+    loseText2.setVisible(false);
 
-    // Win text (hidden initially)
-    winText = this.add.text(400, 300, 'YOU WIN!', {
+    winText = createCenteredText(this, 400, 300, 'YOU WIN!', {
         fontSize: '64px',
         fill: '#2ecc71',
         stroke: '#000',
         strokeThickness: 6
     });
-    winText.setOrigin(0.5);
     winText.setVisible(false);
-    
+
     // Control mode indicator (will be updated in initializeOrientation)
     controlModeText = this.add.text(400, 570, 'Control: Detecting...', {
         fontSize: '16px',
@@ -120,16 +153,32 @@ function create() {
         padding: { x: 8, y: 4 }
     });
     controlModeText.setOrigin(0.5);
-    
+
     // Setup mouse/pointer controls
     initializeMouseControls(this);
     // Setup wall movement with keyboard
     cursors = this.input.keyboard.createCursorKeys();
-    
-    // Request device orientation permission (for iOS 13+)
+
+    setupOrientationPermission(this);
+}
+
+function createImmovableRect(scene, x, y, width, height, color) {
+    const rect = scene.add.rectangle(x, y, width, height, color);
+    scene.physics.add.existing(rect);
+    rect.body.setImmovable(true);
+    rect.body.setAllowGravity(false);
+    return rect;
+}
+
+function createCenteredText(scene, x, y, text, style) {
+    const label = scene.add.text(x, y, text, style);
+    label.setOrigin(0.5);
+    return label;
+}
+
+function setupOrientationPermission(scene) {
     if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
-        // Create a button for iOS permission
-        const permButton = this.add.text(400, 300, 'Tap to enable device motion', {
+        const permButton = scene.add.text(400, 300, 'Tap to enable device motion', {
             fontSize: '24px',
             fill: '#fff',
             backgroundColor: '#3498db',
@@ -137,16 +186,15 @@ function create() {
         });
         permButton.setOrigin(0.5);
         permButton.setInteractive();
-        
+
         permButton.on('pointerdown', () => {
             DeviceOrientationEvent.requestPermission()
                 .then(response => {
+                    permButton.destroy();
                     if (response === 'granted') {
-                        permButton.destroy();
                         initializeOrientation();
                     } else {
-                        permButton.destroy();
-                        useMouseControl = true;
+                        useMouseControl = true;   
                     }
                 })
                 .catch(() => {
@@ -160,174 +208,137 @@ function create() {
 }
 
 function createHoles() {
-    const createHole = (x, y) => {
-        const hole = this.add.rectangle(x, y, 20, 20, 0x34495e);
-        holes.add(hole);
-        hole.body.updateFromGameObject();
-    };
-    
-    createHole(100, 30); // Hole 1
-    createHole(300, 70); // Hole 2
-    createHole(400, 30); // Hole 3
-
-    createHole(460, 130); // Fake hole 1
-
-    createHole(320, 210); // Hole 4
-    createHole(110, 250); // Hole 5
-
-    createHole(30, 260); // Hole 6
-    createHole(30, 420); // Hole 7
-    createHole(55, 200); // Fake Hole 2
-    createHole(30, 485); // Hole 8
-
-    createHole(170, 390)
-    createHole(260, 490)
-    createHole(330, 430)
-
-    createHole(390, 200)
-    createHole(470, 500)
-
-    createHole(470, 40) //Fake Hole 3
-    
-    createHole(700, 550)
-    createHole(550, 200)
-
-    createHole(700, 200)
+    HOLE_POSITIONS.forEach(([x, y]) => {
+        const hole = holes.create(x, y, 'hole');
+        hole.setDisplaySize(30, 30);
+        hole.refreshBody();
+        hole.body.setSize(20, 20, true);
+    });
 }
 
 
 function createMaze() {
-    const createWall = (x, y, width, height) => {
+    MAZE_WALLS.forEach(([x, y, width, height]) => {
         const wall = this.add.rectangle(x, y, width, height, 0x34495e);
         walls.add(wall);
         wall.body.updateFromGameObject();
-    };
-    
-    createWall(80, 0, 10, 200);  
-    createWall(20, 170, 250, 10); 
-    createWall(150, 145, 10, 100);
-
-    createWall(240, 100, 180, 10);
-    createWall(330, 80, 10, 50); 
-
-    createWall(420, 30, 10, 70);
-    createWall(460, 70, 80, 10);
-    createWall(400, 180, 190, 10);
-    createWall(500, 265, 10, 400);  
-
-    createWall(245, 240, 110, 10);
-    createWall(190, 300, 10, 120);
-    createWall(120, 340, 140, 10);
-
-    createWall(140, 440, 10, 200);
-    createWall(37, 450, 70, 10);
-    createWall(110, 545, 70, 10);
-
-    createWall(360, 235, 10, 100);  
-    createWall(360, 400, 10, 100);  
-    createWall(440, 300, 10, 100);  
-
-    createWall(400, 350, 80, 10);  
-
-    createWall(600, 450, 200, 10);  
-    createWall(800, 350, 160, 10);  
-    
-    createWall(800, 250, 10, 500);  
-    createWall(740, 200, 10, 290);  
+    });
 }
 
 function update() {
-    if (gameWon) return;
-    if (fallIntoHole) return;
-
+    if (gameWon || dead) return;
 
     if (useMouseControl) {
-        if (cursors.left.isDown && moveableWall.x > 100) {
-            moveableWall.x -= 2;
-            moveableWall2.x -= 2;
-            moveableWall.body.updateFromGameObject();
-            moveableWall2.body.updateFromGameObject();
-        } else if (cursors.right.isDown && moveableWall.x < 700) {
-            moveableWall.x += 2;
-            moveableWall2.x += 2;
-            moveableWall.body.updateFromGameObject();
-            moveableWall2.body.updateFromGameObject();
-       }
-
-       if (cursors.left.isDown && verticalWall.y > 50) {
-            verticalWall.y -= 2;
-            verticalWall2.y += 2;
-            verticalWall.body.updateFromGameObject();
-            verticalWall2.body.updateFromGameObject();
-        } else if (cursors.right.isDown && verticalWall.y < 550) {
-            verticalWall.y += 2;
-            verticalWall2.y -= 2;
-            verticalWall.body.updateFromGameObject();
-            verticalWall2.body.updateFromGameObject();
-       } 
-    } else if (moveableWall.x > 100 && moveableWall.x < 700) {
-            moveableWall.x -= gyroZ; 
-            moveableWall2.x -= gyroZ;
-            moveableWall.body.updateFromGameObject();
-            moveableWall2.body.updateFromGameObject();
-        } else if (moveableWall.x <= 100) {
-            moveableWall.x = 100;
-            moveableWall2.x = 100;
-            moveableWall.body.updateFromGameObject();
-            moveableWall2.body.updateFromGameObject();
-        } else if (moveableWall.x >= 700) {
-            moveableWall.x = 700;
-            moveableWall2.x = 700;
-            moveableWall.body.updateFromGameObject();
-            moveableWall2.body.updateFromGameObject();
-        }
-        if (verticalWall.y > 50 && verticalWall.y < 550) {
-            verticalWall.y -= gyroZ; 
-            verticalWall2.y += gyroZ;
-            verticalWall.body.updateFromGameObject();
-            verticalWall2.body.updateFromGameObject();
-        } else if (verticalWall.y <= 50) {
-            verticalWall.y = 50;
-            verticalWall2.y = 550;
-            verticalWall.body.updateFromGameObject();
-            verticalWall2.body.updateFromGameObject();
-        } else if (verticalWall.y >= 550) {
-            verticalWall.y = 550;
-            verticalWall2.y = 50;
-            verticalWall.body.updateFromGameObject();
-            verticalWall2.body.updateFromGameObject();
-        }       
-    
-    
-
-    if (useMouseControl) {
-        const dx = mouseX - ball.x;
-        const dy = mouseY - ball.y;
-        const distance = Math.sqrt(dx * dx + dy * dy);
-        
-        if (distance > 5) {
-            // Normalize and apply force
-            const accelX = (dx / distance) * distance * MOUSE_FORCE;
-            const accelY = (dy / distance) * distance * MOUSE_FORCE;
-            ball.body.setAcceleration(accelX, accelY);
-        } else {
-            ball.body.setAcceleration(0, 0);
-        }
+        updateWallsWithKeyboard();
     } else {
-        // Device orientation control
-        // Beta: front-back tilt (negative = tilt forward, positive = tilt back)
-        // Gamma: left-right tilt (negative = tilt left, positive = tilt right)
-        
-        const accelX = gyroX * TILT_MULTIPLIER;
-        const accelY = gyroY * TILT_MULTIPLIER;
-        
+        updateWallsWithGyro();
+    }
+
+    if (useMouseControl) {
+        updateBallWithMouse();
+    } else {
+        updateBallWithGyro();
+    }
+}
+
+function updateWallsWithKeyboard() {
+    if (cursors.left.isDown && moveableWall.x > WALL_X_MIN) {
+        moveWallPairX(-WALL_SPEED);
+    } else if (cursors.right.isDown && moveableWall.x < WALL_X_MAX) {
+        moveWallPairX(WALL_SPEED);
+    }
+
+    if (cursors.left.isDown && verticalWall.y > VERTICAL_Y_MIN) {
+        moveWallPairY(-WALL_SPEED);
+    } else if (cursors.right.isDown && verticalWall.y < VERTICAL_Y_MAX) {
+        moveWallPairY(WALL_SPEED);
+    }
+}
+
+function updateWallsWithGyro() {
+    if (moveableWall.x > WALL_X_MIN && moveableWall.x < WALL_X_MAX) {
+        moveWallPairX(-gyroZ);
+    } else if (moveableWall.x <= WALL_X_MIN) {
+        setWallPairX(WALL_X_MIN);
+    } else if (moveableWall.x >= WALL_X_MAX) {
+        setWallPairX(WALL_X_MAX);
+    }
+
+    if (verticalWall.y > VERTICAL_Y_MIN && verticalWall.y < VERTICAL_Y_MAX) {
+        moveWallPairY(-gyroZ);
+    } else if (verticalWall.y <= VERTICAL_Y_MIN) {
+        setWallPairY(VERTICAL_Y_MIN, VERTICAL_Y_MAX);
+    } else if (verticalWall.y >= VERTICAL_Y_MAX) {
+        setWallPairY(VERTICAL_Y_MAX, VERTICAL_Y_MIN);
+    }
+}
+
+function moveWallPairX(delta) {
+    moveableWall.x += delta;
+    moveableWall2.x += delta;
+    moveableWall.body.updateFromGameObject();
+    moveableWall2.body.updateFromGameObject();
+}
+
+function setWallPairX(x) {
+    moveableWall.x = x;
+    moveableWall2.x = x;
+    moveableWall.body.updateFromGameObject();
+    moveableWall2.body.updateFromGameObject();
+}
+
+function moveWallPairY(delta) {
+    verticalWall.y += delta;
+    verticalWall2.y -= delta;
+    verticalWall.body.updateFromGameObject();
+    verticalWall2.body.updateFromGameObject();
+}
+
+function setWallPairY(y1, y2) {
+    verticalWall.y = y1;
+    verticalWall2.y = y2;
+    verticalWall.body.updateFromGameObject();
+    verticalWall2.body.updateFromGameObject();
+}
+
+function updateBallWithMouse() {
+    const dx = mouseX - ball.x;
+    const dy = mouseY - ball.y;
+    const distance = Math.sqrt(dx * dx + dy * dy);
+
+    if (distance > 5) {
+        const accelX = (dx / distance) * distance * MOUSE_FORCE;
+        const accelY = (dy / distance) * distance * MOUSE_FORCE;
         ball.body.setAcceleration(accelX, accelY);
+    } else {
+        ball.body.setAcceleration(0, 0);
+    }
+}
+
+function updateBallWithGyro() {
+    const accelX = gyroX * TILT_MULTIPLIER;
+    const accelY = gyroY * TILT_MULTIPLIER;
+    ball.body.setAcceleration(accelX, accelY);
+}
+
+function reachDeadlyWall() {
+    if (!dead) {
+        dead = true;
+        ball.body.setVelocity(0, 0);
+        ball.body.setAcceleration(0, 0);
+        loseText2.setVisible(true);
+        
+        setTimeout(() => {
+            if (confirm('You hit a deadly wall! Try again?')) {
+                location.reload();
+            }
+        }, 1000);
     }
 }
 
 function reachHole() {
-    if (!fallIntoHole) {
-        fallIntoHole = true;
+    if (!dead) {
+        dead = true;
         ball.body.setVelocity(0, 0);
         ball.body.setAcceleration(0, 0);
         loseText.setVisible(true);
