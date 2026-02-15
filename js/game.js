@@ -162,6 +162,8 @@ function createHoles() {
     createHole(170, 390)
     createHole(260, 490)
     createHole(330, 430)
+
+    createHole(390, 200)
 }
 
 
@@ -222,6 +224,12 @@ function update() {
        }
     } else if (moveableWall.x > 100 && moveableWall.x < 700) {
             moveableWall.x -= gyroZ; 
+            moveableWall.body.updateFromGameObject();
+        } else if (moveableWall.x <= 100) {
+            moveableWall.x = 100;
+            moveableWall.body.updateFromGameObject();
+        } else if (moveableWall.x >= 700) {
+            moveableWall.x = 700;
             moveableWall.body.updateFromGameObject();
         }
     
