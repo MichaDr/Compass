@@ -4,7 +4,10 @@ let walls;
 let goal;
 let gameWon = false;
 let winText;
+let loseText;
 let controlModeText;
+let fallIntoHole = false;
+
 
 // Control mode
 let useMouseControl = true;
@@ -37,19 +40,33 @@ function create() {
     
     createMaze.call(this);
 
+    holes = this.physics.add.staticGroup();
+
+    createHoles.call(this);
+
     this.wall = this.add.rectangle(400, 300, 200, 20, 0xe74c3c);
     this.physics.add.existing(this.wall);
     this.wall.body.setImmovable(true);
     this.wall.body.setAllowGravity(false);
     
     goal = this.add.circle(750, 550, 20, 0x2ecc71);
-    this.physics.add.existing(goal, true);  // true = static
+    this.physics.add.existing(goal, true); 
     
     // Add collision detection
     this.physics.add.collider(ball, walls);
     this.physics.add.collider(ball, this.wall);
+    this.physics.add.collider(ball, holes, reachHole, null, this);
     this.physics.add.overlap(ball, goal, reachGoal, null, this);
     
+    loseText = this.add.text(400, 300, 'You fell into a hole!', {
+        fontSize: '32px',
+        fill: '#e74c3c',
+        stroke: '#000',
+        strokeThickness: 6
+    });
+    loseText.setOrigin(0.5);
+    loseText.setVisible(false);
+
     // Win text (hidden initially)
     winText = this.add.text(400, 300, 'YOU WIN!', {
         fontSize: '64px',
@@ -115,6 +132,18 @@ function create() {
     }
 }
 
+function createHoles() {
+    const createHole = (x, y) => {
+        const hole = this.add.circle(x, y, 20, 0x34495e);
+        holes.add(hole);
+        hole.body.updateFromGameObject();
+    };
+    
+    createHole(200, 200);
+    createHole(600, 400);
+    createHole(300, 500);
+}
+
 function createMaze() {
     const createWall = (x, y, width, height) => {
         const wall = this.add.rectangle(x, y, width, height, 0x34495e);
@@ -135,9 +164,10 @@ function createMaze() {
 
 function update() {
     if (gameWon) return;
+    if (fallIntoHole) return;
 
     
-        this.wall.x = gyroZ * 100 + 400; 
+        this.wall.x += gyroZ; 
         this.wall.body.updateFromGameObject();
 
     if (useMouseControl) {
@@ -166,6 +196,22 @@ function update() {
         ball.body.setAcceleration(accelX, accelY);
     }
 }
+
+function reachHole() {
+    if (!fallIntoHole) {
+        fallIntoHole = true;
+        ball.body.setVelocity(0, 0);
+        ball.body.setAcceleration(0, 0);
+        loseText.setVisible(true);
+        
+        setTimeout(() => {
+            if (confirm('You fell into a hole! Try again?')) {
+                location.reload();
+            }
+        }, 1000);
+    }
+}
+
 
 function reachGoal() {
     if (!gameWon) {
